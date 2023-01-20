@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+        }
+        body{
+            background: url("background.jpg");
+            background-repeat: no-repeat;
+        }
+        #game-window{
+            background: url("road.png");
+            background-repeat: no-repeat;
+            background-size: 70vw 80vh;
+            width: 70vw;
+            height: 80vh;
+
+            display: table;
+            margin: 0 auto;
+        }
+        button{
+            width: 25%;
+            background: rgb(70, 68, 68);
+            color: white;
+            font-weight: bolder;
+            font-size: larger;
+            font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+            display: table;
+            margin: 0 auto;
+        }
+        #restart-button{
+            display: none;
+        }        
+        div{
+            position: relative;
+            bottom: 0px;
+            font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+            font-weight: bolder;
+            font-size: medium;
+            background-color: gray;
+        }
+    </style>
+    <title>Araba Yarışı</title>
+</head>
+<body>
+    <canvas id="game-window"></canvas>
+    <button id="start-button" onclick="start()">START</button>
+    <button id="restart-button" onclick="restart()">RESTART</button>
+    <button id="exit-button" onclick="exit()">EXIT</button>
+
+    <script>
+        //define the intervals
+        var hit_detector;
+        var send_barrier;
+        var countup;
+        //buttons
+            //define the buttons
+            const start_button=document.getElementById("start-button");
+            const restart_button=document.getElementById("restart-button");
+            //start the game
+            function start() {
+                hit_detector=setInterval(hit,80);
+                send_barrier=setInterval(barrier_movement,80);
+                countup=setInterval(CountUp,1000);
+                start_button.style.display="none";
+                restart_button.style.display="table";
+            }
+            //restart the game
+            function restart() {
+                point = 0;
+                counter=0;
+
+                ctx.clearRect(x_barrier,y_barrier,barrier_width,barrier_height);
+                barrier_width=50;
+                barrier_height=10;
+                x_barrier=Math.floor(Math.floor(Math.random()*(game_window.width-barrier_width)));
+                y_barrier=0;
+
+                ctx.drawImage(img2,x_barrier,y_barrier,barrier_width,barrier_height);
+                ctx.drawImage(img,x,y,car_width,car_height);
+
+                clearInterval(countup);
+                clearInterval(hit_detector);
+                clearInterval(send_barrier);
+
+                hit_detector=setInterval(hit,80);
+                send_barrier=setInterval(barrier_movement,80);
+                countup=setInterval(CountUp,1000);
+            }
+            //exit the game
+            function exit() {
+                ctx.clearRect(0,0,game_window.width,game_window.height);
+                clearInterval(countup);
+                clearInterval(hit_detector);
+                clearInterval(send_barrier);
+                alert("goodbye loser!");
+            }
+        //game window and car is defined in the game
+        const game_window=document.getElementById("game-window");
+        const ctx=game_window.getContext("2d");
+        const car_width=50;
+        const car_height=50;
+        var x=(game_window.width/2)-car_width;
+        var y=game_window.height-car_height;
+        ctx.beginPath();
+        const img = new Image();
+        img.src="./car.png";
+        img.onload= () => {ctx.drawImage(img,x,y,car_width,car_height);};
+
+        //movement events
+        window.addEventListener("keydown",movements);
+        function movements(e) {
+            ctx.clearRect(x,y,car_width,car_height);
+            switch (e.key) {
+                case "ArrowLeft":
+                    x-=5;
+                    break;
+                case "ArrowRight":
+                    x+=5;
+                    break;
+            
+                default:
+                    break;
+            }
+            ctx.drawImage(img,x,y,car_width,car_height);
+        }
+
+        //barriers
+        var barrier_width=50;
+        var barrier_height=10;
+        var x_barrier=Math.floor(Math.random()*(game_window.width-barrier_width));
+        var y_barrier=0;
+        var barrier_speed=80;
+        const img2= new Image();
+        img2.src="./barrier.png";
+        img2.onload = () => {ctx.drawImage(img2,x_barrier,y_barrier,barrier_width,barrier_height);}
+            //barrier movement
+            function barrier_movement() {
+                ctx.clearRect(x_barrier,y_barrier,barrier_width,barrier_height);
+                y_barrier++;
+                ctx.drawImage(img2,x_barrier, y_barrier, barrier_width, barrier_height);
+                if (y_barrier>=game_window.height-barrier_height) {
+                    point+=10;
+                    if (point>=30) {
+                        barrier_width+=5;
+                        barrier_speed+=5;
+                    }
+                    if (point>=60) {
+                        barrier_width+=5;
+                        barrier_speed+=5;
+                    }
+                    if (point>=90) {
+                        barrier_width+=5;
+                        barrier_speed+=5;
+                    }
+                    if (point>=120) {
+                        barrier_width+=5;
+                        barrier_speed+=5;
+                    }
+                    if (point>=150) {
+                        barrier_width+=5;
+                        barrier_speed+=5;
+                    }
+                    ctx.clearRect(x_barrier,y_barrier,barrier_width,barrier_height);
+                    x_barrier=Math.floor(Math.random()*(game_window.width-barrier_width));
+                    y_barrier=0;
+                    clearInterval(send_barrier);
+                    send_barrier=setInterval(barrier_movement,barrier_speed);
+                }
+            }
+        //hit the barrier event
+        function hit() {
+            if (y_barrier+barrier_height>=y && (x_barrier+barrier_width>=x && x_barrier <= x+car_width)) {
+                alert("you hit the barrier! Noob");
+                alert("Your point is: " + point);
+                ctx.clearRect(0,0,game_window.width,game_window.height);
+                clearInterval(send_barrier);
+                clearInterval(countup);
+                clearInterval(hit_detector);
+            }
+        }
+        //points
+        var point=0;
+        function increase_point() {
+            point++;
+        }
+
+        //counter
+        var counter=0;
+        function CountUp() {
+            counter++;
+            increase_point();
+        }
+    </script>
+    <div>
+        <!--resources-->
+        Car image by <a href="https://pixabay.com/tr/users/openclipart-vectors-30363/?utm_source=link-attribution&amp;utm_medium=referral&amp;utm_campaign=image&amp;utm_content=160603">OpenClipart-Vectors</a> from <a href="https://pixabay.com/tr//?utm_source=link-attribution&amp;utm_medium=referral&amp;utm_campaign=image&amp;utm_content=160603" target="_blank">Pixabay</a><br>
+        Barrier image by <a href="https://pixabay.com/users/openclipart-vectors-30363/?utm_source=link-attribution&amp;utm_medium=referral&amp;utm_campaign=image&amp;utm_content=152843">OpenClipart-Vectors</a> from <a href="https://pixabay.com//?utm_source=link-attribution&amp;utm_medium=referral&amp;utm_campaign=image&amp;utm_content=152843" target="_blank">Pixabay</a><br>
+        Backgound image by <a href="https://pixabay.com/users/anaterate-2348028/?utm_source=link-attribution&amp;utm_medium=referral&amp;utm_campaign=image&amp;utm_content=3375205">Wolfgang Eckert</a> from <a href="https://pixabay.com//?utm_source=link-attribution&amp;utm_medium=referral&amp;utm_campaign=image&amp;utm_content=3375205" target="_blank">Pixabay</a><br>
+        <a href="https://play.google.com/store/apps/dev?id=8068675830237888072" target="_blank">visit my playstore</a><br>
+        <a href="https://github.com/MrSolak51?tab=repositories" target="_blank">visit my github</a>
+    </div>
+</body>
+</html>
